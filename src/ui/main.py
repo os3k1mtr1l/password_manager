@@ -73,8 +73,20 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidget(self.scrollAreaContent)
 
         self.add_new_btn = QtWidgets.QPushButton("Add new", self.passwordsPage)
-        self.add_new_btn.setGeometry(QtCore.QRect(1140, 10, 131, 51))
+        self.add_new_btn.setGeometry(QtCore.QRect(1140, 10, 130, 50))
         self.add_new_btn.setStyleSheet("padding: 10px; font-size: 14pt;")
+
+        self.import_btn = QtWidgets.QPushButton("Import", self.passwordsPage)
+        self.import_btn.setGeometry(QtCore.QRect(1140, 70, 130, 50))
+        self.import_btn.setStyleSheet("padding: 10px; font-size: 14pt;")
+
+        self.export_btn = QtWidgets.QPushButton("Export", self.passwordsPage)
+        self.export_btn.setGeometry(QtCore.QRect(1140, 130, 130, 50))
+        self.export_btn.setStyleSheet("padding: 10px; font-size: 14pt;")
+
+        self.exit_btn = QtWidgets.QPushButton("Exit", self.passwordsPage)
+        self.exit_btn.setGeometry(QtCore.QRect(1140, 190, 130, 50))
+        self.exit_btn.setStyleSheet("padding: 10px; font-size: 14pt;")
 
         self.pagesWidget.addWidget(self.passwordsPage)
 

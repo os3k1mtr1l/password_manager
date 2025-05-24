@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets, QtCore
 from typing import Any
 
 from src.ui.main import Ui_MainWindow
-from src.dialogs import AddDialog, ViewDialog
+from src.dialogs import AddDialog, ViewDialog, ExportDialog, ImportDialog
 from src.db.passworddatabase import PasswordDatabase
 from src.constants import LOGOUT_TIME, Pages
 
@@ -27,6 +27,10 @@ class MainWindow(QtWidgets.QMainWindow):
         ui.create_button.clicked.connect(self.create_master_key)
         ui.button_enter.clicked.connect(self.login)
         ui.add_new_btn.clicked.connect(self.add_new_entry)
+        ui.exit_btn.clicked.connect(self.close)
+
+        ui.import_btn.clicked.connect(self.import_entry)
+        ui.export_btn.clicked.connect(self.export_entry)
 
     def __setup_timer(self) -> None:
         self.auto_logout_timer = QtCore.QTimer()
@@ -35,7 +39,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.installEventFilter(self)
 
     def create_master_key(self):
-        password = self.ui.input.text()
+        password = self.ui.create_input.text()
         if not password:
             QtWidgets.QMessageBox.warning(self, "Error", "Password cannot be empty")
             return
@@ -116,3 +120,13 @@ class MainWindow(QtWidgets.QMainWindow):
         if event.type() in (QtCore.QEvent.Type.MouseMove, QtCore.QEvent.Type.KeyPress):
             self.auto_logout_timer.start(LOGOUT_TIME)
         return super().eventFilter(source, event)
+
+
+    def import_entry(self) -> None:
+        dialog = ImportDialog()
+        dialog.exec_()
+
+
+    def export_entry(self) -> None:
+        dialog = ExportDialog()
+        dialog.exec_()
