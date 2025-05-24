@@ -20,14 +20,17 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.ui.pagesWidget.setCurrentIndex(Pages.LOGIN_PAGE_CREATE)
 
-
-    #логіка для змінни вкладок
     def __setup_logic(self) -> None:
         ui = self.ui
+        
         ui.create_button.clicked.connect(self.create_master_key)
+        self.ui.create_input.returnPressed.connect(self.ui.create_button.click)
+
         ui.button_enter.clicked.connect(self.login)
+        self.ui.lineEdit_masterKey.returnPressed.connect(self.ui.button_enter.click)
+
         ui.add_new_btn.clicked.connect(self.add_new_entry)
-        ui.exit_btn.clicked.connect(self.close)
+        ui.exit_btn.clicked.connect(self.logout)
 
         ui.import_btn.clicked.connect(self.import_entry)
         ui.export_btn.clicked.connect(self.export_entry)
@@ -40,6 +43,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def create_master_key(self):
         password = self.ui.create_input.text()
+        self.ui.create_input.clear()
         if not password:
             QtWidgets.QMessageBox.warning(self, "Error", "Password cannot be empty")
             return
@@ -49,6 +53,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def login(self):
         password = self.ui.lineEdit_masterKey.text()
+        self.ui.lineEdit_masterKey.clear()
         if not password:
             QtWidgets.QMessageBox.warning(self, "Error", "Password cannot be empty")
             return
@@ -62,12 +67,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pagesWidget.setCurrentIndex(Pages.MAIN_PAGE)
         entries = self.pwddb.get_all_record_names()
         for entry in entries:
-            widget = self.record_entry(entry)
-            self.ui.scrollLayout.addWidget(widget)
-        
+            self.record_entry(entry)
 
     def logout(self) -> None:
-        raise NotImplementedError
+        self.auto_logout_timer.stop()
+        self.ui.pagesWidget.setCurrentIndex(Pages.LOGIN_PAGE_EXISTS)
+        self.pwddb.end()
+
+        while self.ui.scrollLayout.count():
+            widget = self.ui.scrollLayout.itemAt(0).widget()
+            self.ui.scrollLayout.removeWidget(widget)
+            widget.setParent(None)
+            widget.deleteLater()
 
     def view_entry(self, widget: QtWidgets.QWidget) -> None:
         login, password = self.pwddb.show_record(widget.property("record_id"))
@@ -106,15 +117,23 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def add_new_entry(self) -> None:
         dialog = AddDialog()
-        if dialog.exec_() == QtWidgets.QDialog.Accepted:
-            name, login, password = dialog.get_data()
-            entry: dict[str, Any] = {
-                "name": name,
-                "login": login,
-                "password": password
-            }
+        
+        while True:
+            if dialog.exec_() == QtWidgets.QDialog.Accepted:
+                name, login, password = dialog.get_data()
 
-            self.record_entry(entry)
+                if not name or not login or not password:
+                    QtWidgets.QMessageBox.warning(self, "Warning", "All fields must be filled")
+                    continue
+
+                entry: dict[str, Any] = {
+                    "name": name,
+                    "login": login,
+                    "password": password
+                }
+
+                self.record_entry(entry)
+                break
 
     def eventFilter(self, source: QtCore.QObject, event: QtCore.QEvent):
         if event.type() in (QtCore.QEvent.Type.MouseMove, QtCore.QEvent.Type.KeyPress):
@@ -124,7 +143,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def import_entry(self) -> None:
         dialog = ImportDialog()
-        dialog.exec_()
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            ...
 
 
     def export_entry(self) -> None:

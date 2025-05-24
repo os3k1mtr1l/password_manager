@@ -1,5 +1,6 @@
 PyQt5
 cryptography
+SQLAlchemy
 nuitka
 ordered-set
 zstandard

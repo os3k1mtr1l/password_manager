@@ -1,5 +1,4 @@
 from PyQt5 import QtCore, QtWidgets
-import os
 
 #додавання нового паролю
 class AddDialog(QtWidgets.QDialog):
@@ -32,10 +31,8 @@ class AddDialog(QtWidgets.QDialog):
         self.cancel_button.clicked.connect(self.reject)
         self.add_button.clicked.connect(self.accept)
 
-    def get_data(self):
+    def get_data(self) -> tuple[str, str, str]:
         return self.name_input.text(), self.login_input.text(), self.password_input.text()
-
-
 
 #перегляд збереженого паролю
 class ViewDialog(QtWidgets.QDialog):
@@ -111,8 +108,6 @@ class ExportDialog(QtWidgets.QDialog):
         if folder:
             self.path_input.setText(folder)
 
-
-
 #імпорт
 class ImportDialog(QtWidgets.QDialog):
     def __init__(self):
@@ -143,6 +138,6 @@ class ImportDialog(QtWidgets.QDialog):
         self.import_button.clicked.connect(self.accept)
 
     def select_file(self):
-        file, _ = QtWidgets.QFileDialog.getOpenFileName(self)
+        file, _ = QtWidgets.QFileDialog.getOpenFileName(self, )
         if file:
             self.file_input.setText(file)

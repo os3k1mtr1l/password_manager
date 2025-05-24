@@ -6,6 +6,9 @@ from src.db.models.password import Password
 from src.db.models.meta import Meta
 from src.crypto import CryptoHandler
 
+class PassKeyException(Exception):
+    pass
+
 class PasswordDatabase:
     def __init__(self):
         Base.metadata.create_all(engine)
@@ -22,9 +25,9 @@ class PasswordDatabase:
 
             try:
                 if self.crypto.decrypt(meta.verify_token) != "VERIFY":
-                    raise Exception("Пароль неверен")
+                    raise PassKeyException("Invalid password")
             except Exception:
-                raise Exception("Пароль неверен или поврежденные данные")
+                raise PassKeyException("Invalid password or corrupted data")
         else:
             self.crypto, salt, iter, verify_token = CryptoHandler.create_new(master_key)
         
@@ -37,6 +40,10 @@ class PasswordDatabase:
             self.db.add(meta)
             self.db.commit()
             self.db.refresh(meta)
+
+    def end(self) -> None:
+        self.crypto.key = None
+        self.crypto = None
 
     def write_meta(self, salt: bytes, kdf_iter: int, verify_token: bytes) -> None:
         self.db.add(Meta(
