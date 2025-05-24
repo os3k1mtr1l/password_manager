@@ -1,0 +1,1 @@
+nuitka main.py --standalone --onefile --enable-plugin=pyqt5 --include-package=src --output-dir=build --windows-disable-console

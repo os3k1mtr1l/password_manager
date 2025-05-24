@@ -1,2 +1,5 @@
 PyQt5
 cryptography
+nuitka
+ordered-set
+zstandard
