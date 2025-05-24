@@ -62,8 +62,14 @@ class Ui_MainWindow(object):
         # сторінка з паролями (індекс 2)
         self.passwordsPage = QtWidgets.QWidget()
         self.passwordsPage.setObjectName("passwordsPage")
+
+        self.search_input = QtWidgets.QLineEdit(self.passwordsPage)
+        self.search_input.setGeometry(QtCore.QRect(20, 10, 300, 40))
+        self.search_input.setPlaceholderText("Search...")
+        self.search_input.setStyleSheet("padding: 8px; font-size: 12pt;")
+
         self.scrollArea = QtWidgets.QScrollArea(self.passwordsPage)
-        self.scrollArea.setGeometry(QtCore.QRect(19, 9, 971, 701))
+        self.scrollArea.setGeometry(QtCore.QRect(19, 60, 971, 701))
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaContent = QtWidgets.QWidget()

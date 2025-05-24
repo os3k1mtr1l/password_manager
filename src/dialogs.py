@@ -39,7 +39,7 @@ class ViewDialog(QtWidgets.QDialog):
     def __init__(self, login, password):
         super().__init__()
         self.setWindowTitle("View details")
-        self.setFixedSize(300, 150)
+        self.setFixedSize(300, 200)
         layout = QtWidgets.QVBoxLayout(self)
 
         #кнопки та поля
@@ -60,8 +60,12 @@ class ViewDialog(QtWidgets.QDialog):
         password_layout.addWidget(self.copy_password_btn)
         layout.addLayout(password_layout)
 
+        buttons_layout = QtWidgets.QHBoxLayout()
+        self.edit_btn = QtWidgets.QPushButton("Edit")
+        buttons_layout.addWidget(self.edit_btn)
         self.close_btn = QtWidgets.QPushButton("Close")
-        layout.addWidget(self.close_btn)
+        buttons_layout.addWidget(self.close_btn)
+        layout.addLayout(buttons_layout)
 
         #копіювання
         self.copy_login_btn.clicked.connect(lambda: QtWidgets.QApplication.clipboard().setText(login))
