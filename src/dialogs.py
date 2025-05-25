@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
 
-styles = """
+DIALOG_STYLES = """
 QDialog {
     background-color: #1B2631;
     color: #ECF0F1;
@@ -33,7 +33,7 @@ QPushButton {
     border: 2px solid #3498DB;
     border-radius: 6px;
     padding: 10px 20px;
-    min-height: 40px;
+    min-height: 22px;
 }
 
 QPushButton:hover {
@@ -65,16 +65,15 @@ QPushButton#icon_button {
 }
 """
 
-#додавання нового паролю
+# Додавання нового паролю
 class AddDialog(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Add New")
         self.setFixedSize(320, 240)
-        self.setStyleSheet(styles)
+        self.setStyleSheet(DIALOG_STYLES)
         layout = QtWidgets.QVBoxLayout(self)
 
-        #поля вводу
         self.name_input = QtWidgets.QLineEdit()
         self.name_input.setPlaceholderText("Name")
         self.login_input = QtWidgets.QLineEdit()
@@ -86,7 +85,6 @@ class AddDialog(QtWidgets.QDialog):
         layout.addWidget(self.login_input)
         layout.addWidget(self.password_input)
 
-        #кнопки
         button_layout = QtWidgets.QHBoxLayout()
         self.cancel_button = QtWidgets.QPushButton("Cancel")
         self.cancel_button.setObjectName("cancel_button")
@@ -104,21 +102,20 @@ class AddDialog(QtWidgets.QDialog):
     def get_data(self) -> tuple[str, str, str]:
         return self.name_input.text(), self.login_input.text(), self.password_input.text()
 
-#перегляд збереженого паролю
+# Перегляд збереженого паролю
 class ViewDialog(QtWidgets.QDialog):
     def __init__(self, record_id, login, password, parent=None):
         super().__init__()
         self.setWindowTitle("View Details")
         self.setFixedSize(320, 220)
-        self.setStyleSheet(styles)
+        self.setStyleSheet(DIALOG_STYLES)
         layout = QtWidgets.QVBoxLayout(self)
 
         self.modified = False
         self.edit_mode = False
         self.record_id = record_id
-        self.parent = parent  # ссылка на MainWindow для вызова pwddb
+        self.parent = parent
 
-        #кнопки та поля
         login_layout = QtWidgets.QHBoxLayout()
         self.login_edit = QtWidgets.QLineEdit(login)
         self.login_edit.setReadOnly(True)
@@ -127,7 +124,6 @@ class ViewDialog(QtWidgets.QDialog):
         login_layout.addWidget(self.copy_login_btn)
         layout.addLayout(login_layout)
 
-        #властивості полей
         password_layout = QtWidgets.QHBoxLayout()
         self.password_edit = QtWidgets.QLineEdit(password)
         self.password_edit.setReadOnly(True)
@@ -139,15 +135,13 @@ class ViewDialog(QtWidgets.QDialog):
         buttons_layout = QtWidgets.QHBoxLayout()
         self.edit_btn = QtWidgets.QPushButton("Edit")
         self.edit_btn.clicked.connect(self.toggle_edit_mode)
-        buttons_layout.addWidget(self.edit_btn)
         self.close_btn = QtWidgets.QPushButton("Close")
         buttons_layout.addWidget(self.edit_btn)
         buttons_layout.addWidget(self.close_btn)
         layout.addLayout(buttons_layout)
 
-        #копіювання
-        self.copy_login_btn.clicked.connect(lambda: QtWidgets.QApplication.clipboard().setText(login))
-        self.copy_password_btn.clicked.connect(lambda: QtWidgets.QApplication.clipboard().setText(password))
+        self.copy_login_btn.clicked.connect(lambda: QtWidgets.QApplication.clipboard().setText(self.login_edit.text()))
+        self.copy_password_btn.clicked.connect(lambda: QtWidgets.QApplication.clipboard().setText(self.password_edit.text()))
         self.close_btn.clicked.connect(self.accept)
 
     def toggle_edit_mode(self):
@@ -164,30 +158,23 @@ class ViewDialog(QtWidgets.QDialog):
                 QtWidgets.QMessageBox.warning(self, "Error", "Fields can not be empty")
                 return
 
-            self.parent.pwddb.update_password(
-                self.record_id,
-                new_login,
-                new_password
-            )
-
+            self.parent.pwddb.update_password(self.record_id, new_login, new_password)
             self.modified = True
-            self.accept()  # закрыть диалог
+            self.accept()
 
-#експорт
+# Діалог експорту
 class ExportDialog(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Export")
         self.setFixedSize(420, 220)
-        self.setStyleSheet(styles)
+        self.setStyleSheet(DIALOG_STYLES)
         layout = QtWidgets.QVBoxLayout(self)
 
-        #назва
         self.filename_input = QtWidgets.QLineEdit()
         self.filename_input.setPlaceholderText("File name")
         layout.addWidget(self.filename_input)
 
-        #шлях
         path_layout = QtWidgets.QHBoxLayout()
         self.path_input = QtWidgets.QLineEdit()
         self.path_input.setPlaceholderText("Select folder")
@@ -196,7 +183,6 @@ class ExportDialog(QtWidgets.QDialog):
         path_layout.addWidget(self.browse_btn)
         layout.addLayout(path_layout)
 
-        #кнопки
         button_layout = QtWidgets.QHBoxLayout()
         self.cancel_button = QtWidgets.QPushButton("Cancel")
         self.cancel_button.setObjectName("cancel_button")
@@ -214,31 +200,28 @@ class ExportDialog(QtWidgets.QDialog):
         if folder:
             self.path_input.setText(folder)
 
-#імпорт
+# Діалог імпорту
 class ImportDialog(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Import")
-        self.setFixedSize(420, 180)
-        self.setStyleSheet(styles)
+        self.setFixedSize(420, 200)
+        self.setStyleSheet(DIALOG_STYLES)
         layout = QtWidgets.QVBoxLayout(self)
 
-        #вибір
         file_layout = QtWidgets.QHBoxLayout()
         self.file_input = QtWidgets.QLineEdit()
         self.file_input.setPlaceholderText("Select file to import")
         self.browse_btn = QtWidgets.QPushButton("Browse")
-        
+        file_layout.addWidget(self.file_input)
+        file_layout.addWidget(self.browse_btn)
+        layout.addLayout(file_layout)
+
         self.key_input = QtWidgets.QLineEdit()
         self.key_input.setPlaceholderText("Master Key for imported file")
         self.key_input.setEchoMode(QtWidgets.QLineEdit.Password)
-        
-        file_layout.addWidget(self.file_input)
-        file_layout.addWidget(self.browse_btn)
-        file_layout.addWidget(self.key_input)
-        layout.addLayout(file_layout)
+        layout.addWidget(self.key_input)
 
-        #кнопки
         button_layout = QtWidgets.QHBoxLayout()
         self.cancel_button = QtWidgets.QPushButton("Cancel")
         self.cancel_button.setObjectName("cancel_button")

@@ -18,11 +18,18 @@ class Ui_MainWindow(object):
             "QLineEdit:focus { border: 2px solid #3498DB; }"
         )
 
-        button_style = (
+        common_button_style = (
             "QPushButton { background-color: #5DADE2; color: white; font-size: 14pt; font-weight: bold; "
             "border: none; border-radius: 6px; padding: 10px; } "
             "QPushButton:hover { background-color: #3498DB; } "
             "QPushButton:pressed { background-color: #2E86C1; }"
+        )
+
+        exit_button_style = (
+            "QPushButton { background-color: #DE3C31; color: white; font-size: 14pt; font-weight: bold; "
+            "border: none; border-radius: 6px; padding: 10px; } "
+            "QPushButton:hover { background-color: #F07F78; } "
+            "QPushButton:pressed { background-color: #B5605B; }"
         )
 
         label_style = "QLabel { color: #ECF0F1; font-size: 20pt; font-weight: bold; }"
@@ -41,7 +48,7 @@ class Ui_MainWindow(object):
         self.create_input.setPlaceholderText("Enter new master key")
         self.create_input.setStyleSheet(common_input_style)
         self.create_button = QtWidgets.QPushButton("Create")
-        self.create_button.setStyleSheet(button_style)
+        self.create_button.setStyleSheet(common_button_style)
         layout.addWidget(self.create_label)
         layout.addWidget(self.create_input)
         layout.addWidget(self.create_button)
@@ -64,7 +71,7 @@ class Ui_MainWindow(object):
         self.lineEdit_masterKey.setStyleSheet(common_input_style)
         self.lineEdit_masterKey.setEchoMode(QtWidgets.QLineEdit.Password)
         self.button_enter = QtWidgets.QPushButton("Enter")
-        self.button_enter.setStyleSheet(button_style)
+        self.button_enter.setStyleSheet(common_button_style)
         self.loginBox.addWidget(self.text_enterMasterKey)
         self.loginBox.addWidget(self.lineEdit_masterKey)
         self.loginBox.addWidget(self.button_enter)
@@ -106,23 +113,23 @@ class Ui_MainWindow(object):
                 margin: 0px;
                 border-radius: 6px;
             }
-        
+
             QScrollBar::handle:vertical {
                 background: #5DADE2;
                 min-height: 25px;
                 border-radius: 6px;
             }
-        
+
             QScrollBar::handle:vertical:hover {
                 background: #3498DB;
             }
-        
+
             QScrollBar::add-line:vertical,
             QScrollBar::sub-line:vertical {
                 background: none;
                 height: 0px;
             }
-        
+
             QScrollBar::add-page:vertical,
             QScrollBar::sub-page:vertical {
                 background: none;
@@ -133,6 +140,9 @@ class Ui_MainWindow(object):
         self.scrollAreaContent = QtWidgets.QWidget()
         self.scrollAreaContent.setObjectName("scrollAreaContent")
         self.scrollLayout = QtWidgets.QVBoxLayout(self.scrollAreaContent)
+        self.scrollAreaContent.setLayout(self.scrollLayout)
+        self.scrollAreaContent.setMinimumHeight(0)
+        self.scrollLayout.setSizeConstraint(QtWidgets.QLayout.SetMinAndMaxSize)
         self.scrollLayout.setAlignment(QtCore.Qt.AlignTop)
         self.scrollLayout.setSpacing(10)
 
@@ -141,19 +151,19 @@ class Ui_MainWindow(object):
         # Buttons on the right side
         self.add_new_btn = QtWidgets.QPushButton("Add new", self.passwordsPage)
         self.add_new_btn.setGeometry(QtCore.QRect(1140, 10, 130, 45))
-        self.add_new_btn.setStyleSheet(button_style)
+        self.add_new_btn.setStyleSheet(common_button_style)
 
         self.import_btn = QtWidgets.QPushButton("Import", self.passwordsPage)
         self.import_btn.setGeometry(QtCore.QRect(1140, 70, 130, 45))
-        self.import_btn.setStyleSheet(button_style)
+        self.import_btn.setStyleSheet(common_button_style)
 
         self.export_btn = QtWidgets.QPushButton("Export", self.passwordsPage)
         self.export_btn.setGeometry(QtCore.QRect(1140, 130, 130, 45))
-        self.export_btn.setStyleSheet(button_style)
+        self.export_btn.setStyleSheet(common_button_style)
 
         self.exit_btn = QtWidgets.QPushButton("Exit", self.passwordsPage)
         self.exit_btn.setGeometry(QtCore.QRect(1140, 190, 130, 45))
-        self.exit_btn.setStyleSheet(button_style)
+        self.exit_btn.setStyleSheet(exit_button_style)
 
         self.pagesWidget.addWidget(self.passwordsPage)
 
