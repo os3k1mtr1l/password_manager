@@ -65,16 +65,16 @@ QPushButton#icon_button {
 }
 """
 
-# Додавання нового паролю
+#додавання нового паролю
 class AddDialog(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Add New")
         self.setFixedSize(320, 240)
         self.setStyleSheet(styles)
-
         layout = QtWidgets.QVBoxLayout(self)
 
+        #поля вводу
         self.name_input = QtWidgets.QLineEdit()
         self.name_input.setPlaceholderText("Name")
         self.login_input = QtWidgets.QLineEdit()
@@ -86,6 +86,7 @@ class AddDialog(QtWidgets.QDialog):
         layout.addWidget(self.login_input)
         layout.addWidget(self.password_input)
 
+        #кнопки
         button_layout = QtWidgets.QHBoxLayout()
         self.cancel_button = QtWidgets.QPushButton("Cancel")
         self.cancel_button.setObjectName("cancel_button")
@@ -103,25 +104,21 @@ class AddDialog(QtWidgets.QDialog):
     def get_data(self) -> tuple[str, str, str]:
         return self.name_input.text(), self.login_input.text(), self.password_input.text()
 
-# Перегляд збереженого паролю
+#перегляд збереженого паролю
 class ViewDialog(QtWidgets.QDialog):
     def __init__(self, record_id, login, password, parent=None):
         super().__init__()
         self.setWindowTitle("View Details")
         self.setFixedSize(320, 220)
         self.setStyleSheet(styles)
-
         layout = QtWidgets.QVBoxLayout(self)
 
-<<<<<<< HEAD
         self.modified = False
         self.edit_mode = False
         self.record_id = record_id
         self.parent = parent  # ссылка на MainWindow для вызова pwddb
 
         #кнопки та поля
-=======
->>>>>>> 534b709df4862dbd39881bb5cccdca1ad431c192
         login_layout = QtWidgets.QHBoxLayout()
         self.login_edit = QtWidgets.QLineEdit(login)
         self.login_edit.setReadOnly(True)
@@ -130,6 +127,7 @@ class ViewDialog(QtWidgets.QDialog):
         login_layout.addWidget(self.copy_login_btn)
         layout.addLayout(login_layout)
 
+        #властивості полей
         password_layout = QtWidgets.QHBoxLayout()
         self.password_edit = QtWidgets.QLineEdit(password)
         self.password_edit.setReadOnly(True)
@@ -140,21 +138,18 @@ class ViewDialog(QtWidgets.QDialog):
 
         buttons_layout = QtWidgets.QHBoxLayout()
         self.edit_btn = QtWidgets.QPushButton("Edit")
-<<<<<<< HEAD
         self.edit_btn.clicked.connect(self.toggle_edit_mode)
         buttons_layout.addWidget(self.edit_btn)
-=======
->>>>>>> 534b709df4862dbd39881bb5cccdca1ad431c192
         self.close_btn = QtWidgets.QPushButton("Close")
         buttons_layout.addWidget(self.edit_btn)
         buttons_layout.addWidget(self.close_btn)
         layout.addLayout(buttons_layout)
 
+        #копіювання
         self.copy_login_btn.clicked.connect(lambda: QtWidgets.QApplication.clipboard().setText(login))
         self.copy_password_btn.clicked.connect(lambda: QtWidgets.QApplication.clipboard().setText(password))
         self.close_btn.clicked.connect(self.accept)
 
-<<<<<<< HEAD
     def toggle_edit_mode(self):
         if not self.edit_mode:
             self.login_edit.setReadOnly(False)
@@ -179,22 +174,20 @@ class ViewDialog(QtWidgets.QDialog):
             self.accept()  # закрыть диалог
 
 #експорт
-=======
-# Експорт
->>>>>>> 534b709df4862dbd39881bb5cccdca1ad431c192
 class ExportDialog(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Export")
         self.setFixedSize(420, 220)
         self.setStyleSheet(styles)
-
         layout = QtWidgets.QVBoxLayout(self)
 
+        #назва
         self.filename_input = QtWidgets.QLineEdit()
         self.filename_input.setPlaceholderText("File name")
         layout.addWidget(self.filename_input)
 
+        #шлях
         path_layout = QtWidgets.QHBoxLayout()
         self.path_input = QtWidgets.QLineEdit()
         self.path_input.setPlaceholderText("Select folder")
@@ -203,6 +196,7 @@ class ExportDialog(QtWidgets.QDialog):
         path_layout.addWidget(self.browse_btn)
         layout.addLayout(path_layout)
 
+        #кнопки
         button_layout = QtWidgets.QHBoxLayout()
         self.cancel_button = QtWidgets.QPushButton("Cancel")
         self.cancel_button.setObjectName("cancel_button")
@@ -220,16 +214,16 @@ class ExportDialog(QtWidgets.QDialog):
         if folder:
             self.path_input.setText(folder)
 
-# Імпорт
+#імпорт
 class ImportDialog(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Import")
         self.setFixedSize(420, 180)
         self.setStyleSheet(styles)
-
         layout = QtWidgets.QVBoxLayout(self)
 
+        #вибір
         file_layout = QtWidgets.QHBoxLayout()
         self.file_input = QtWidgets.QLineEdit()
         self.file_input.setPlaceholderText("Select file to import")
@@ -244,6 +238,7 @@ class ImportDialog(QtWidgets.QDialog):
         file_layout.addWidget(self.key_input)
         layout.addLayout(file_layout)
 
+        #кнопки
         button_layout = QtWidgets.QHBoxLayout()
         self.cancel_button = QtWidgets.QPushButton("Cancel")
         self.cancel_button.setObjectName("cancel_button")
@@ -258,10 +253,6 @@ class ImportDialog(QtWidgets.QDialog):
         self.key_input.returnPressed.connect(self.accept)
 
     def select_file(self):
-<<<<<<< HEAD
         file, _ = QtWidgets.QFileDialog.getOpenFileName(self, filter="Export File (*.pwddb)")
-=======
-        file, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select File")
->>>>>>> 534b709df4862dbd39881bb5cccdca1ad431c192
         if file:
             self.file_input.setText(file)
