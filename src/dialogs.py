@@ -219,7 +219,7 @@ class ImportDialog(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Import")
-        self.setFixedSize(420, 180)
+        self.setFixedSize(420, 200)
         self.setStyleSheet(styles)
         layout = QtWidgets.QVBoxLayout(self)
 
@@ -228,15 +228,14 @@ class ImportDialog(QtWidgets.QDialog):
         self.file_input = QtWidgets.QLineEdit()
         self.file_input.setPlaceholderText("Select file to import")
         self.browse_btn = QtWidgets.QPushButton("Browse")
+        file_layout.addWidget(self.file_input)
+        file_layout.addWidget(self.browse_btn)
+        layout.addLayout(file_layout)
         
         self.key_input = QtWidgets.QLineEdit()
         self.key_input.setPlaceholderText("Master Key for imported file")
         self.key_input.setEchoMode(QtWidgets.QLineEdit.Password)
-        
-        file_layout.addWidget(self.file_input)
-        file_layout.addWidget(self.browse_btn)
-        file_layout.addWidget(self.key_input)
-        layout.addLayout(file_layout)
+        layout.addWidget(self.key_input)
 
         #кнопки
         button_layout = QtWidgets.QHBoxLayout()
