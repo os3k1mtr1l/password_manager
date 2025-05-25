@@ -1,1 +1,1 @@
-nuitka main.py --standalone --onefile --enable-plugin=pyqt5 --include-package=src --output-dir=build --windows-disable-console
+nuitka main.py --standalone --onefile --windows-icon-from-ico=icon.ico --enable-plugin=pyqt5 --include-package=src --output-dir=build --windows-disable-console
