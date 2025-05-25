@@ -30,17 +30,25 @@ class AddDialog(QtWidgets.QDialog):
 
         self.cancel_button.clicked.connect(self.reject)
         self.add_button.clicked.connect(self.accept)
+        self.name_input.returnPressed.connect(self.accept)
+        self.login_input.returnPressed.connect(self.accept)
+        self.password_input.returnPressed.connect(self.accept)
 
     def get_data(self) -> tuple[str, str, str]:
         return self.name_input.text(), self.login_input.text(), self.password_input.text()
 
 #перегляд збереженого паролю
 class ViewDialog(QtWidgets.QDialog):
-    def __init__(self, login, password):
+    def __init__(self, record_id, login, password, parent=None):
         super().__init__()
         self.setWindowTitle("View details")
         self.setFixedSize(300, 200)
         layout = QtWidgets.QVBoxLayout(self)
+
+        self.modified = False
+        self.edit_mode = False
+        self.record_id = record_id
+        self.parent = parent  # ссылка на MainWindow для вызова pwddb
 
         #кнопки та поля
         login_layout = QtWidgets.QHBoxLayout()
@@ -62,6 +70,7 @@ class ViewDialog(QtWidgets.QDialog):
 
         buttons_layout = QtWidgets.QHBoxLayout()
         self.edit_btn = QtWidgets.QPushButton("Edit")
+        self.edit_btn.clicked.connect(self.toggle_edit_mode)
         buttons_layout.addWidget(self.edit_btn)
         self.close_btn = QtWidgets.QPushButton("Close")
         buttons_layout.addWidget(self.close_btn)
@@ -72,6 +81,28 @@ class ViewDialog(QtWidgets.QDialog):
         self.copy_password_btn.clicked.connect(lambda: QtWidgets.QApplication.clipboard().setText(password))
         self.close_btn.clicked.connect(self.accept)
 
+    def toggle_edit_mode(self):
+        if not self.edit_mode:
+            self.login_edit.setReadOnly(False)
+            self.password_edit.setReadOnly(False)
+            self.edit_btn.setText("Save")
+            self.edit_mode = True
+        else:
+            new_login = self.login_edit.text().strip()
+            new_password = self.password_edit.text().strip()
+
+            if not new_login or not new_password:
+                QtWidgets.QMessageBox.warning(self, "Error", "Fields can not be empty")
+                return
+
+            self.parent.pwddb.update_password(
+                self.record_id,
+                new_login,
+                new_password
+            )
+
+            self.modified = True
+            self.accept()  # закрыть диалог
 
 #експорт
 class ExportDialog(QtWidgets.QDialog):
@@ -125,8 +156,14 @@ class ImportDialog(QtWidgets.QDialog):
         self.file_input = QtWidgets.QLineEdit()
         self.file_input.setPlaceholderText("Select file to import")
         self.browse_btn = QtWidgets.QPushButton("Browse")
+        
+        self.key_input = QtWidgets.QLineEdit()
+        self.key_input.setPlaceholderText("Master Key for imported file")
+        self.key_input.setEchoMode(QtWidgets.QLineEdit.Password)
+        
         file_layout.addWidget(self.file_input)
         file_layout.addWidget(self.browse_btn)
+        file_layout.addWidget(self.key_input)
         layout.addLayout(file_layout)
 
         #кнопки
@@ -140,8 +177,9 @@ class ImportDialog(QtWidgets.QDialog):
         self.browse_btn.clicked.connect(self.select_file)
         self.cancel_button.clicked.connect(self.reject)
         self.import_button.clicked.connect(self.accept)
+        self.key_input.returnPressed.connect(self.accept)
 
     def select_file(self):
-        file, _ = QtWidgets.QFileDialog.getOpenFileName(self, )
+        file, _ = QtWidgets.QFileDialog.getOpenFileName(self, filter="Export File (*.pwddb)")
         if file:
             self.file_input.setText(file)

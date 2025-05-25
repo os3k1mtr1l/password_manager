@@ -1,4 +1,8 @@
 from sqlalchemy.orm import Session
+import base64
+import json
+from pathlib import Path
+from typing import Any
 
 from src.db.session import SessionLocal, engine
 from src.db.models.base import Base
@@ -26,7 +30,7 @@ class PasswordDatabase:
             try:
                 if self.crypto.decrypt(meta.verify_token) != "VERIFY":
                     raise PassKeyException("Invalid password")
-            except Exception:
+            except Exception as e:
                 raise PassKeyException("Invalid password or corrupted data")
         else:
             self.crypto, salt, iter, verify_token = CryptoHandler.create_new(master_key)
@@ -57,7 +61,7 @@ class PasswordDatabase:
         meta: Meta = self.db.query(Meta).first()
         return meta.salt, meta.kdf_iter, meta.verify_token
 
-    def add_password(self, name: str, login: str, password: str):
+    def add_password(self, name: str, login: str, password: str) -> int:
         new_password = Password(
             name=name,
             login=login,
@@ -91,24 +95,109 @@ class PasswordDatabase:
         self.db.delete(record)
         self.db.commit()
 
-    def record_exists(self, record_id: int) -> bool:
-        return self.db.query(Password).filter(Password.id == record_id).count() > 0
+    def record_exists(self, name: str, login: str) -> bool:
+        return self.db.query(Password).filter(Password.name == name, Password.login == login).count() > 0
 
-    def update_password(self, record_id: int, name: str, login: str, password: str):
+    def update_password(self, record_id: int, login: str, password: str):
         record: Password = self.db.query(Password).filter(Password.id == record_id).first()
 
         record.login = login
         record.password = self.crypto.encrypt(password)
 
-        self.db.refresh(record)
         self.db.commit()
+        self.db.refresh(record)
 
     def find_by_name(self, name: str) -> list[str]:
-        result: list[str] = []
+        records = self.db.query(Password).filter(Password.name.ilike(f"%{name}%")).all()
         
-        for password_record in self.db.query(Password).filter(Password.name.ilike(f"{name}%")).all():
-            result.append(
-                password_record.name
+        return [
+            {
+                "id": r.id,
+                "name": r.name
+            }
+            for r in records
+        ]
+    
+    def import_db(self, path: Path, key: str) -> int:
+        with open(path, "rb") as f:
+            magic = f.read(3)
+            if magic != b"PW!":
+                raise ValueError("Not valid .pwddb")
+            raw_json = f.read()
+
+        try:
+            data = json.loads(raw_json)
+        except Exception:
+            raise ValueError("Invalid or corrupted .pwddb file")
+
+        try:
+            salt = base64.b64decode(data["meta"]["salt"])
+            kdf_iter = data["meta"]["kdf_iter"]
+            verify_token = base64.b64decode(data["meta"]["verify_token"])
+            encrypted_data = base64.b64decode(data["entries"])
+
+            imported_crypto: CryptoHandler = CryptoHandler.from_existing(
+                key, salt, kdf_iter
             )
 
-        return result
+            if imported_crypto.decrypt(verify_token) != "VERIFY":
+                raise ValueError("Wrong key")
+
+            json_str = imported_crypto.decrypt(encrypted_data)
+            entries = json.loads(json_str)
+
+            records_added = 0
+            for entry in entries:
+                name = entry["name"]
+                login = entry["login"]
+                password = base64.b64decode(entry["password"])
+                password = imported_crypto.decrypt(password)
+
+                if not self.record_exists(name, login):
+                    self.add_password(name, login, password)
+                    records_added += 1
+
+            return records_added
+
+        except Exception as e:
+            raise ValueError(f"Import failed: {e}")
+    
+    def export_db(self, path: Path, filename: str):
+        path = Path(path)
+        if not path.exists() or not path.is_dir():
+            raise RuntimeError("Export path is empty")
+        
+        filename = filename if len(filename) > 0 else "export"
+
+        filename += ".pwddb"
+        path = path / filename
+
+        salt, kdf_iter, verify_token = self.load_meta()
+        entries = self.db.query(Password).all()
+
+        serialized_entries = [
+            {
+                "name": e.name,
+                "login": e.login,
+                "password": base64.b64encode(e.password).decode()
+            }
+            for e in entries
+        ]
+
+        entries_json = json.dumps(serialized_entries)
+        encrypted_entries = self.crypto.encrypt(entries_json)
+
+        payload = {
+            "meta": {
+                "salt": base64.b64encode(salt).decode(),
+                "kdf_iter": kdf_iter,
+                "verify_token": base64.b64encode(verify_token).decode()
+            },
+            "entries": base64.b64encode(encrypted_entries).decode()
+        }
+
+        json_str = json.dumps(payload)
+
+        with open(path, "wb") as f:
+            f.write(b"PW!")
+            f.write(json_str.encode())

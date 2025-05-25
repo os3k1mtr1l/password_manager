@@ -35,11 +35,32 @@ class MainWindow(QtWidgets.QMainWindow):
         ui.import_btn.clicked.connect(self.import_entry)
         ui.export_btn.clicked.connect(self.export_entry)
 
+        ui.search_input.textChanged.connect(self.refresh_entries)
+
     def __setup_timer(self) -> None:
         self.auto_logout_timer = QtCore.QTimer()
         self.auto_logout_timer.timeout.connect(self.logout)
         self.auto_logout_timer.start(LOGOUT_TIME)
         self.installEventFilter(self)
+
+    def clear_entries(self) -> None:
+        while self.ui.scrollLayout.count():
+            widget = self.ui.scrollLayout.itemAt(0).widget()
+            self.ui.scrollLayout.removeWidget(widget)
+            widget.setParent(None)
+            widget.deleteLater()
+
+    def refresh_entries(self) -> None:
+        self.clear_entries()
+        
+        keyword = self.ui.search_input.text().strip()
+        if keyword:
+            entries = self.pwddb.find_by_name(keyword)
+        else:
+            entries = self.pwddb.get_all_record_names()
+
+        for entry in entries:
+            self.record_entry(entry)
 
     def create_master_key(self):
         password = self.ui.create_input.text()
@@ -65,24 +86,21 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         self.ui.pagesWidget.setCurrentIndex(Pages.MAIN_PAGE)
-        entries = self.pwddb.get_all_record_names()
-        for entry in entries:
-            self.record_entry(entry)
+        self.refresh_entries()
 
     def logout(self) -> None:
         self.auto_logout_timer.stop()
         self.ui.pagesWidget.setCurrentIndex(Pages.LOGIN_PAGE_EXISTS)
         self.pwddb.end()
-
-        while self.ui.scrollLayout.count():
-            widget = self.ui.scrollLayout.itemAt(0).widget()
-            self.ui.scrollLayout.removeWidget(widget)
-            widget.setParent(None)
-            widget.deleteLater()
+        self.clear_entries()
 
     def view_entry(self, widget: QtWidgets.QWidget) -> None:
         login, password = self.pwddb.show_record(widget.property("record_id"))
-        ViewDialog(login, password).exec_()
+        dialog = ViewDialog(widget.property("record_id"), login, password, self)
+
+        dialog.exec_()
+        if dialog.modified:
+            self.refresh_entries()
 
     def remove_entry(self, widget: QtWidgets.QWidget) -> None:
         self.pwddb.delete_password(widget.property("record_id"))
@@ -95,7 +113,7 @@ class MainWindow(QtWidgets.QMainWindow):
         login = entry.get("login")
         password = entry.get("password")
 
-        if not id:    
+        if not id:
             id = self.pwddb.add_password(name, login, password)
 
         entry_widget = QtWidgets.QWidget()
@@ -119,7 +137,9 @@ class MainWindow(QtWidgets.QMainWindow):
         dialog = AddDialog()
         
         while True:
-            if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            returned = dialog.exec_()
+
+            if returned == QtWidgets.QDialog.Accepted:
                 name, login, password = dialog.get_data()
 
                 if not name or not login or not password:
@@ -133,20 +153,47 @@ class MainWindow(QtWidgets.QMainWindow):
                 }
 
                 self.record_entry(entry)
-                break
+                return
+            elif returned == QtWidgets.QDialog.Rejected:
+                return
 
     def eventFilter(self, source: QtCore.QObject, event: QtCore.QEvent):
         if event.type() in (QtCore.QEvent.Type.MouseMove, QtCore.QEvent.Type.KeyPress):
             self.auto_logout_timer.start(LOGOUT_TIME)
         return super().eventFilter(source, event)
 
-
     def import_entry(self) -> None:
         dialog = ImportDialog()
-        if dialog.exec_() == QtWidgets.QDialog.Accepted:
-            ...
+        
+        while True:
+            returned = dialog.exec_()
+            if returned == QtWidgets.QDialog.Accepted:
+                count = 0
+                try:
+                    count = self.pwddb.import_db(dialog.file_input.text(), dialog.key_input.text())
+                except Exception as e:
+                    QtWidgets.QMessageBox.warning(self, "Warning", f"{e}")
+                    continue
 
+                QtWidgets.QMessageBox.information(self, "Done", f"Imported {count} records")
+                self.refresh_entries()
+                return
+            elif returned == QtWidgets.QDialog.Rejected:
+                return
 
     def export_entry(self) -> None:
         dialog = ExportDialog()
-        dialog.exec_()
+        
+        while True:
+            returned = dialog.exec_()
+            if returned == QtWidgets.QDialog.Accepted:
+                try:
+                    self.pwddb.export_db(dialog.path_input.text(), dialog.filename_input.text())
+                except Exception as e:
+                    QtWidgets.QMessageBox.warning(self, "Warning", f"{e}")
+                    continue
+
+                QtWidgets.QMessageBox.information(self, "Done", f"File saved at {dialog.path_input.text()} as {dialog.filename_input.text()}")
+                return
+            elif returned == QtWidgets.QDialog.Rejected:
+                return
