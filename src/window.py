@@ -22,7 +22,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __setup_logic(self) -> None:
         ui = self.ui
-        
+
         ui.create_button.clicked.connect(self.create_master_key)
         self.ui.create_input.returnPressed.connect(self.ui.create_button.click)
 
@@ -52,7 +52,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def refresh_entries(self) -> None:
         self.clear_entries()
-        
+
         keyword = self.ui.search_input.text().strip()
         if keyword:
             entries = self.pwddb.find_by_name(keyword)
@@ -68,7 +68,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not password:
             QtWidgets.QMessageBox.warning(self, "Error", "Password cannot be empty")
             return
-        
+
         self.pwddb.start(password)
         self.ui.pagesWidget.setCurrentIndex(Pages.MAIN_PAGE)
 
@@ -78,7 +78,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not password:
             QtWidgets.QMessageBox.warning(self, "Error", "Password cannot be empty")
             return
-        
+
         try:
             self.pwddb.start(password)
         except Exception as e:
@@ -118,14 +118,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         entry_widget = QtWidgets.QWidget()
         layout = QtWidgets.QHBoxLayout(entry_widget)
-        
+        entry_widget.setMinimumHeight(60)
         entry_widget.setProperty("record_id", id)
         entry_widget.setStyleSheet("background-color: transparent; border: none;")
 
-        layout = QtWidgets.QHBoxLayout(entry_widget)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(10)
-        
         name_label = QtWidgets.QLabel(name)
         name_label.setStyleSheet("""
             QLabel {
@@ -149,11 +145,11 @@ class MainWindow(QtWidgets.QMainWindow):
             QPushButton:hover { background-color: #3498DB; }
             QPushButton:pressed { background-color: #2E86C1; }
         """)
-        
+
         delete_btn = QtWidgets.QPushButton("Delete")
         delete_btn.setStyleSheet("""
             QPushButton {
-                background-color: #5DADE2;
+                background-color: #DE3C31;
                 color: white;
                 font-size: 14pt;
                 font-weight: bold;
@@ -161,8 +157,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 border-radius: 6px;
                 padding: 5px 16px;
             }
-            QPushButton:hover { background-color: #3498DB; }
-            QPushButton:pressed { background-color: #2E86C1; }
+            QPushButton:hover { background-color: #F07F78; }
+            QPushButton:pressed { background-color: #B5605B; }
         """)
 
         view_btn.clicked.connect(lambda: self.view_entry(entry_widget))
@@ -171,12 +167,12 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(name_label)
         layout.addWidget(view_btn)
         layout.addWidget(delete_btn)
-        
+
         self.ui.scrollLayout.addWidget(entry_widget)
 
     def add_new_entry(self) -> None:
         dialog = AddDialog()
-        
+
         while True:
             returned = dialog.exec_()
 
@@ -205,7 +201,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def import_entry(self) -> None:
         dialog = ImportDialog()
-        
+
         while True:
             returned = dialog.exec_()
             if returned == QtWidgets.QDialog.Accepted:
@@ -224,7 +220,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def export_entry(self) -> None:
         dialog = ExportDialog()
-        
+
         while True:
             returned = dialog.exec_()
             if returned == QtWidgets.QDialog.Accepted:
