@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 from typing import Any
 
 from src.ui.main import Ui_MainWindow
@@ -11,6 +11,8 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setWindowIcon(QtGui.QIcon("icon.ico"))
+        self.setWindowTitle("Password Manager")
         self.__setup_logic()
         self.__setup_timer()
         self.pwddb: PasswordDatabase = PasswordDatabase()
